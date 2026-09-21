@@ -1,0 +1,14 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Environment secrets
+.env
+.env.local
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# IDE
+.idea/
