@@ -1,0 +1,70 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status {
+  margin-top: 40px;
+  padding: 0 16px;
+  text-align: center;
+  color: var(--tg-text-secondary);
+}
+
+.retry {
+  margin-top: 12px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 20px;
+  background: var(--tg-accent);
+  color: #ffffff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* grey placeholder rows while the clients request is in flight */
+.skeleton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 72px;
+  padding: 9px;
+}
+
+.skeletonAvatar,
+.skeletonLine {
+  background: var(--tg-hover);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.skeletonAvatar {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.skeletonLines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonLine {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.skeletonLine:last-child {
+  width: 70%;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}

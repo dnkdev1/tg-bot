@@ -1,0 +1,19 @@
+/* sticky: while scrolling, the current day's pill stays at the top, like in Telegram */
+.separator {
+  position: sticky;
+  top: 8px;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 6px;
+  pointer-events: none;
+}
+
+.pill {
+  padding: 3px 10px;
+  border-radius: 14px;
+  background: var(--tg-pill-bg);
+  color: var(--tg-pill-text);
+  font-size: 14px;
+  font-weight: 500;
+}

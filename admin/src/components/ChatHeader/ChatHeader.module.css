@@ -1,0 +1,60 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--tg-header-height);
+  padding: 0 16px;
+  flex-shrink: 0;
+  background: var(--tg-header-bg);
+  border-bottom: 1px solid var(--tg-border);
+}
+
+.info {
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--tg-text-secondary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ← back to the chat list, phones only */
+.back {
+  display: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -8px;
+  margin-right: -4px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tg-text-secondary);
+  cursor: pointer;
+}
+
+.back:hover {
+  background: var(--tg-hover);
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding: 0 12px;
+  }
+
+  .back {
+    display: grid;
+  }
+}

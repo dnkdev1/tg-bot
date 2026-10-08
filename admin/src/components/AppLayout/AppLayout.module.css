@@ -1,0 +1,35 @@
+/* Two fixed columns filling the whole window: sidebar | chat */
+.layout {
+  display: grid;
+  grid-template-columns: var(--tg-sidebar-width) 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sidebar {
+  min-width: 0;
+  border-right: 1px solid var(--tg-border);
+  overflow: hidden;
+}
+
+.main {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Phones: one column at a time, like the Telegram app. The chat list is shown
+   until a chat is opened; then the chat takes the full screen (← goes back). */
+@media (max-width: 767px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+  }
+
+  .layout:not(.mainActive) .main,
+  .mainActive .sidebar {
+    display: none;
+  }
+}

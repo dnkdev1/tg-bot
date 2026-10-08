@@ -1,0 +1,60 @@
+/* positioning context for the ↓ button, fills the space under the header */
+.wrapper {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* scrolls; the column of bubbles is centered and capped like Telegram Web */
+.scroller {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.column {
+  max-width: 728px;
+  margin: 0 auto;
+  padding: 8px 20px 16px;
+}
+
+/* phones: less side padding so bubbles get more room */
+@media (max-width: 767px) {
+  .column {
+    padding: 8px 10px 12px;
+  }
+
+  .jump {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* round "scroll to newest" button, bottom-right, like Telegram */
+.jump {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: var(--tg-header-bg);
+  color: var(--tg-text-secondary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  animation: appear 0.15s ease-out;
+}
+
+.jump:hover {
+  color: var(--tg-accent);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

@@ -1,0 +1,164 @@
+/* dark see-through layer over the whole app; click it to close */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* the drawer itself, slides in from the left like Telegram Desktop */
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  width: min(300px, 85vw);
+  background: var(--tg-sidebar-bg);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.25);
+  animation: slideIn 0.2s ease-out;
+}
+
+.drawer:focus {
+  outline: none;
+}
+
+.header {
+  padding: 20px 20px 16px;
+  background: var(--tg-accent);
+  color: #ffffff;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.stats {
+  margin-top: 2px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tg-text);
+  font-size: 15px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--tg-hover);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--tg-accent);
+  outline-offset: -2px;
+}
+
+.item:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--tg-text-secondary);
+}
+
+/* refresh icon spins while data is loading */
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+.hint {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--tg-text-secondary);
+}
+
+/* Telegram-style toggle: grey track, white knob; accent track + knob right when on */
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 32px;
+  height: 14px;
+  margin-left: auto;
+  border-radius: 7px;
+  background: var(--tg-text-secondary);
+  opacity: 0.6;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.hint + .switch {
+  margin-left: 12px;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -2px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--tg-text-secondary);
+  border-radius: 50%;
+  background: var(--tg-sidebar-bg);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.switchOn {
+  background: var(--tg-accent);
+  opacity: 1;
+}
+
+.switchOn::after {
+  border-color: var(--tg-accent);
+  transform: translateX(16px);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

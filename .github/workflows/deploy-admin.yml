@@ -1,0 +1,65 @@
+# Builds the admin panel (admin/) and publishes it to GitHub Pages:
+#   https://dnkdev1.github.io/tg-bot/
+# Runs on every push to master that changes admin/ (or this file), and on demand
+# from the Actions tab ("Run workflow").
+# One-time setup in the repo: Settings -> Pages -> Source: "GitHub Actions".
+name: Deploy admin panel
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'admin/**'
+      - '.github/workflows/deploy-admin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write # publish to GitHub Pages
+  id-token: write # required by deploy-pages to prove the deploy comes from this repo
+
+# never run two deploys at once; a newer push cancels the queued one
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    env:
+      # admin/.env is git-ignored, so the build gets its settings here.
+      # All three are public by design (they end up in the browser JS anyway).
+      # Never put the secret / service_role key in this file.
+      VITE_FUNCTIONS_URL: https://uepdyeiebbjkletkfycq.supabase.co/functions/v1
+      VITE_SUPABASE_URL: https://uepdyeiebbjkletkfycq.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_FEAiCZdzRpmGzU0qoLfC1A_eK7TvJoK
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - run: npm ci # exact versions from package-lock.json
+      - run: npm run lint
+      - run: npm run build # typecheck + production build into admin/dist
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: admin/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

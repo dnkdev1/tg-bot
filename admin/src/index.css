@@ -1,0 +1,106 @@
+/* Global reset + Telegram theme tokens.
+   Component styles live in *.module.css files next to each component and use these variables,
+   so the dark theme only has to redefine the tokens. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light;
+
+  /* surfaces */
+  --tg-bg: #ffffff;
+  --tg-sidebar-bg: #ffffff;
+  --tg-header-bg: #ffffff;
+  --tg-border: #dadce0;
+  --tg-hover: #f4f4f5;
+  --tg-input-bg: #f4f4f5;
+
+  /* text */
+  --tg-text: #000000;
+  --tg-text-secondary: #707579;
+  --tg-accent: #3390ec;
+
+  /* chat area: Telegram's default green-yellow wallpaper */
+  --tg-chat-bg-1: #dbddbb;
+  --tg-chat-bg-2: #6ba587;
+  --tg-chat-bg-3: #d5d88d;
+  --tg-chat-bg-4: #88b884;
+  --tg-pill-bg: rgba(0, 0, 0, 0.25);
+  --tg-pill-text: #ffffff;
+  --tg-skeleton-bubble: rgba(255, 255, 255, 0.6);
+
+  /* message bubbles: incoming = client (left), outgoing = bot reply (right) */
+  --tg-bubble-in: #ffffff;
+  --tg-bubble-out: #eeffde;
+  --tg-bubble-in-time: #a0acb6;
+  --tg-bubble-out-time: #4fae4e;
+  --tg-bubble-shadow: 0 1px 2px rgba(16, 35, 47, 0.15);
+
+  /* sizes */
+  --tg-sidebar-width: 360px;
+  --tg-header-height: 56px;
+}
+
+/* Night mode, Telegram Web's dark palette. data-theme is always set before the
+   first paint by the script in index.html (saved choice, else the OS setting). */
+:root[data-theme='dark'] {
+  color-scheme: dark; /* dark scrollbars and form controls */
+
+  --tg-bg: #181818;
+  --tg-sidebar-bg: #212121;
+  --tg-header-bg: #212121;
+  --tg-border: #0f0f0f;
+  --tg-hover: #2c2c2c;
+  --tg-input-bg: #181818;
+
+  --tg-text: #ffffff;
+  --tg-text-secondary: #aaaaaa;
+  --tg-accent: #8774e1;
+
+  --tg-chat-bg-1: #1d2a24;
+  --tg-chat-bg-2: #2f4a3c;
+  --tg-chat-bg-3: #3a3a26;
+  --tg-chat-bg-4: #263f30;
+  --tg-pill-bg: rgba(0, 0, 0, 0.4);
+  --tg-skeleton-bubble: rgba(255, 255, 255, 0.12);
+
+  --tg-bubble-in: #212121;
+  --tg-bubble-out: #766ac8;
+  --tg-bubble-in-time: #aaaaaa;
+  --tg-bubble-out-time: #e0dbff;
+  --tg-bubble-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* phones: the sidebar takes the whole width */
+@media (max-width: 767px) {
+  :root {
+    --tg-sidebar-width: 100%;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  /* "Twemoji Country Flags" only covers flag emoji (it is loaded on Windows only,
+     see main.tsx); every other character falls through to the system fonts */
+  font-family: 'Twemoji Country Flags', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: var(--tg-text);
+  background: var(--tg-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}

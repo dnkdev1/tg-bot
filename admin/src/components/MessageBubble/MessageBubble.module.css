@@ -1,0 +1,96 @@
+/* full-width row; the bubble is pushed left (incoming) or right (outgoing) */
+.row {
+  display: flex;
+  margin-top: 2px;
+}
+
+.row.groupStart {
+  margin-top: 8px;
+}
+
+.out {
+  justify-content: flex-end;
+}
+
+.bubble {
+  position: relative;
+  max-width: min(480px, 85%);
+  padding: 6px 8px 7px 10px;
+  border-radius: 12px;
+  box-shadow: var(--tg-bubble-shadow);
+  line-height: 1.35;
+  font-size: 15px;
+}
+
+.in .bubble {
+  background: var(--tg-bubble-in);
+}
+
+.out .bubble {
+  background: var(--tg-bubble-out);
+}
+
+/* the last bubble of a group has a tail: square that corner, the SVG draws the tail */
+.in.groupEnd .bubble {
+  border-bottom-left-radius: 0;
+}
+
+.out.groupEnd .bubble {
+  border-bottom-right-radius: 0;
+}
+
+.tail {
+  position: absolute;
+  bottom: 0;
+  width: 9px;
+  height: 17px;
+}
+
+.in .tail {
+  left: -9px;
+  color: var(--tg-bubble-in);
+}
+
+.out .tail {
+  right: -9px;
+  color: var(--tg-bubble-out);
+  transform: scaleX(-1);
+}
+
+.author {
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tg-bubble-out-time);
+}
+
+/* keep the bot's line breaks; break very long words like "hhhhhhhhhhhh" */
+.text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* time sits at the bottom-right corner; the invisible spacer (same text, same size)
+   reserves room for it on the last text line, the same trick Telegram uses */
+.spacer {
+  visibility: hidden;
+  padding-left: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.time {
+  position: absolute;
+  right: 8px;
+  bottom: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.in .time {
+  color: var(--tg-bubble-in-time);
+}
+
+.out .time {
+  color: var(--tg-bubble-out-time);
+}
