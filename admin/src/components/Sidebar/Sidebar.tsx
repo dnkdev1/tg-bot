@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import type { FeedStatus } from '../../api/realtime.ts'
 import { ChatList } from '../ChatList/ChatList.tsx'
 import { SideMenu } from '../SideMenu/SideMenu.tsx'
+import { UserBar } from '../UserBar/UserBar.tsx'
 import styles from './Sidebar.module.css'
 
 interface SidebarProps {
@@ -18,7 +19,7 @@ const FEED_STATUS_TEXT: Record<FeedStatus, string | null> = {
   live: null,
 }
 
-// Left column: menu button, search field and the chat list.
+// Left column: signed-in user, menu button, search field and the chat list.
 export function Sidebar({ selectedClientId, onSelectClient, feedStatus }: SidebarProps) {
   const statusText = FEED_STATUS_TEXT[feedStatus]
   const [search, setSearch] = useState('')
@@ -28,6 +29,8 @@ export function Sidebar({ selectedClientId, onSelectClient, feedStatus }: Sideba
 
   return (
     <div className={styles.sidebar}>
+      <UserBar />
+
       <div className={styles.header}>
         <button
           type="button"

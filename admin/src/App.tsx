@@ -2,7 +2,9 @@ import { useEffect } from 'react'
 import { useRealtimeFeed } from './api/realtime.ts'
 import { AppLayout } from './components/AppLayout/AppLayout.tsx'
 import { ChatWindow } from './components/ChatWindow/ChatWindow.tsx'
+import { LoginPage } from './components/LoginPage/LoginPage.tsx'
 import { Sidebar } from './components/Sidebar/Sidebar.tsx'
+import { useIsLoginRoute } from './lib/useIsLoginRoute.ts'
 import { useSelectedChat } from './lib/useSelectedChat.ts'
 import { useTheme } from './lib/useTheme.ts'
 
@@ -14,6 +16,7 @@ function App() {
   useTheme()
   // One WebSocket subscription for the whole app; pushes new clients/messages into the cache.
   const feedStatus = useRealtimeFeed()
+  const isLoginRoute = useIsLoginRoute()
 
   // Esc closes the open chat, like Telegram. Inside the search field Esc is left
   // to the browser (it clears the field); when the side menu is open, the menu
@@ -27,6 +30,10 @@ function App() {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [setSelectedClientId])
+
+  // #/login replaces the whole panel. The hooks above still run, so the live feed
+  // keeps the cache fresh and the chats are up to date right after login.
+  if (isLoginRoute) return <LoginPage />
 
   return (
     <AppLayout

@@ -1,0 +1,80 @@
+/* centered card on the page background, like Telegram Web's login screen */
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: 16px;
+  background: var(--tg-bg);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--tg-text);
+}
+
+.subtitle {
+  margin: -8px 0 8px;
+  text-align: center;
+  color: var(--tg-text-secondary);
+}
+
+.input {
+  height: 54px;
+  padding: 0 16px;
+  border: 1px solid var(--tg-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tg-text);
+  font-size: 16px; /* 16px stops iOS Safari from zooming into the field */
+  outline: none;
+}
+
+.input:focus {
+  border: 2px solid var(--tg-accent);
+  padding: 0 15px; /* keep the text in place when the border gets thicker */
+}
+
+.error {
+  margin: -4px 0 0;
+  color: #e53935;
+  font-size: 14px;
+}
+
+.submit {
+  height: 54px;
+  border: none;
+  border-radius: 10px;
+  background: var(--tg-accent);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.back {
+  align-self: center;
+  color: var(--tg-accent);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
