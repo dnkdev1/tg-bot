@@ -1,35 +1,21 @@
 import { useState } from 'react'
 import { signOut, useSession } from '../../api/auth.ts'
-import { LOGIN_HASH } from '../../lib/hashRoute.ts'
 import styles from './UserBar.module.css'
 
-// Top of the sidebar: who is logged in + "Sign out", or a "Log in" link.
+// Top of the sidebar: who is logged in + "Sign out". The panel is only rendered
+// for a logged-in user (see App), so there is no logged-out state here.
 export function UserBar() {
   const session = useSession()
   const [signingOut, setSigningOut] = useState(false)
 
-  // Session not known yet (reading localStorage / refreshing the token): keep the
-  // bar's height but show nothing, so a logged-in user never sees "Log in" flash.
-  if (session === undefined) return <div className={styles.bar} />
-
-  if (session === null) {
-    return (
-      <div className={styles.bar}>
-        <span className={styles.guest}>Not signed in</span>
-        {/* a real link: the hash route opens the login page (useIsLoginRoute) */}
-        <a className={styles.action} href={LOGIN_HASH}>
-          Log in
-        </a>
-      </div>
-    )
-  }
+  if (!session) return null
 
   const email = session.user.email ?? 'Unknown user'
 
   const onSignOut = async () => {
     setSigningOut(true)
     try {
-      await signOut() // onAuthStateChange("SIGNED_OUT") re-renders this bar
+      await signOut() // onAuthStateChange("SIGNED_OUT") → App shows the login form
     } finally {
       setSigningOut(false)
     }

@@ -1,22 +1,14 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { signIn, useSession } from '../../api/auth.ts'
-import { navigate } from '../../lib/hashRoute.ts'
+import { useState, type FormEvent } from 'react'
+import { signIn } from '../../api/auth.ts'
 import styles from './LoginPage.module.css'
 
-// Full-screen email + password form at #/login. After a successful login (or if
-// the user is already logged in) it goes back to the chat list.
+// Full-screen email + password form. App shows it whenever nobody is logged in;
+// after a successful login App switches to the chats by itself.
 export function LoginPage() {
-  const session = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
-
-  // Covers both a fresh login and opening #/login while already logged in.
-  // replace: Back from the chats should not land on the used login form again.
-  useEffect(() => {
-    if (session) navigate(null, { replace: true })
-  }, [session])
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault() // no page reload; supabase-js does the request
@@ -24,7 +16,7 @@ export function LoginPage() {
     setPending(true)
     try {
       await signIn(email.trim(), password)
-      // the session effect above redirects
+      // onAuthStateChange("SIGNED_IN") → App renders the chats instead of this page
     } catch (err) {
       // Supabase says "Invalid login credentials" for both a wrong email and a
       // wrong password, so the form does not reveal which accounts exist.
@@ -69,17 +61,6 @@ export function LoginPage() {
         <button className={styles.submit} type="submit" disabled={pending}>
           {pending ? 'Signing in…' : 'Sign in'}
         </button>
-
-        <a
-          className={styles.back}
-          href="#"
-          onClick={(e) => {
-            e.preventDefault() // navigate() instead, so no dangling "#" stays in the URL
-            navigate(null)
-          }}
-        >
-          Back to chats
-        </a>
       </form>
     </div>
   )

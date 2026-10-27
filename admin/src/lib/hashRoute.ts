@@ -25,3 +25,22 @@ export function navigate(hash: string | null, { replace = false } = {}) {
 }
 
 export const LOGIN_HASH = '#/login'
+
+// Where the user was going before being sent to the login form (e.g. "#/chat/2"),
+// so a shared chat link still opens that chat after logging in.
+let returnTo: string | null = null
+
+// replace: the page they were sent away from shows nothing without a login, so
+// Back should not lead to it.
+export function redirectToLogin() {
+  if (window.location.hash === LOGIN_HASH) return
+  returnTo = window.location.hash || null
+  navigate(LOGIN_HASH, { replace: true })
+}
+
+// After login: back to the remembered page, or the chat list.
+export function leaveLogin() {
+  const target = returnTo
+  returnTo = null
+  navigate(target, { replace: true })
+}

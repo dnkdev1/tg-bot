@@ -67,14 +67,3 @@
   opacity: 0.7;
   cursor: progress;
 }
-
-.back {
-  align-self: center;
-  color: var(--tg-accent);
-  font-size: 14px;
-  text-decoration: none;
-}
-
-.back:hover {
-  text-decoration: underline;
-}
