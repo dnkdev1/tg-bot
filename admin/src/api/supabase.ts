@@ -9,8 +9,14 @@ if (!url || !publishableKey) {
   )
 }
 
-// Used only for Realtime (the WebSocket live feed); data is still loaded through
-// the edge functions. No user login, so nothing to persist or refresh.
+// Used for Realtime (the WebSocket live feed) and for login (email + password).
+// Chat data is still loaded through the edge functions.
 export const supabase = createClient(url, publishableKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
+  auth: {
+    persistSession: true, // keep the session in localStorage, so a reload stays logged in
+    autoRefreshToken: true, // get a new access token shortly before the old one expires
+    // Password login never puts tokens in the URL. Off, so the client does not try
+    // to parse our own hash routes (#/chat/2, #/login) as an OAuth redirect.
+    detectSessionInUrl: false,
+  },
 })
