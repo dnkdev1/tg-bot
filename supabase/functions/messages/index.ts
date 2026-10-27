@@ -5,11 +5,17 @@ import { withSupabase } from "@supabase/server";
 // PostgREST returns at most 1000 rows per request, so "all messages" is read page by page.
 const PAGE_SIZE = 1000;
 
-// Public endpoint: no key required. messenger_user_id is deliberately not selected.
+// Admins only: the caller must send "Authorization: Bearer <access token>" of a
+// logged-in user whose app_metadata.role is "admin" (set by SQL, users cannot
+// change it themselves). No / invalid / expired token -> 401 from withSupabase;
+// valid token of a non-admin -> 403 below. messenger_user_id is deliberately not selected.
 export default {
-  fetch: withSupabase({ auth: "none" }, async (req, ctx) => {
+  fetch: withSupabase({ auth: "user" }, async (req, ctx) => {
     if (req.method !== "GET") {
       return new Response("Method Not Allowed", { status: 405 });
+    }
+    if (ctx.userClaims?.appMetadata?.role !== "admin") {
+      return Response.json({ error: "Admins only" }, { status: 403 });
     }
 
     const messages = [];
