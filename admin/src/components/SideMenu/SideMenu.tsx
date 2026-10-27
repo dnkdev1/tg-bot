@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
-import { functionUrl } from '../../api/http.ts'
 import { useClients, useMessageCount } from '../../api/queries.ts'
 import { useTheme } from '../../lib/useTheme.ts'
 import styles from './SideMenu.module.css'
@@ -85,29 +84,8 @@ export function SideMenu({ onClose }: SideMenuProps) {
             {followsSystem && <span className={styles.hint}>auto</span>}
             <span className={`${styles.switch} ${theme === 'dark' ? styles.switchOn : ''}`} aria-hidden="true" />
           </button>
-
-          <a className={styles.item} href={functionUrl('clients')} target="_blank" rel="noreferrer" onClick={onClose}>
-            <JsonIcon />
-            Clients JSON
-            <span className={styles.hint}>/clients ↗</span>
-          </a>
-
-          <a className={styles.item} href={functionUrl('messages')} target="_blank" rel="noreferrer" onClick={onClose}>
-            <JsonIcon />
-            Messages JSON
-            <span className={styles.hint}>/messages ↗</span>
-          </a>
         </nav>
       </div>
     </>
-  )
-}
-
-function JsonIcon() {
-  return (
-    <svg className={styles.icon} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1" />
-      <path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" />
-    </svg>
   )
 }
