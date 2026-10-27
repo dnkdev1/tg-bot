@@ -5,8 +5,8 @@ import { supabase } from './supabase.ts'
 import type { Client, Message } from './types.ts'
 
 // Live updates over a WebSocket (Supabase Realtime, Broadcast).
-// Database triggers (migration 20261008120000_admin_realtime_feed.sql) send every
-// inserted/updated client and message to the "admin-feed" channel; this hook
+// Database triggers (migrations 20261008120000 and 20261027120000) send every
+// inserted/updated client and message to the private "admin-feed" channel; this hook
 // writes them straight into the TanStack Query cache, so the chat list and the
 // open chat re-render instantly without refetching anything.
 
@@ -54,7 +54,10 @@ export function useRealtimeFeed(): FeedStatus {
     let wasLive = false
 
     const channel = supabase
-      .channel(CHANNEL)
+      // private: Realtime checks our access token against the "admins can listen to
+      // admin-feed" policy (migration 20261027120000) before letting us join.
+      // supabase-js sends the logged-in user's token and keeps it fresh by itself.
+      .channel(CHANNEL, { config: { private: true } })
       .on('broadcast', { event: 'client' }, ({ payload }) => applyClient(queryClient, payload as Client))
       .on('broadcast', { event: 'message' }, ({ payload }) => applyMessage(queryClient, payload as Message))
       .subscribe((state) => {
