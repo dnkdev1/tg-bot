@@ -20,4 +20,18 @@ export class TelegramMessengerGateway {
     }
     return data;
   }
+
+  // Shows "typing…" in the chat for ~5s (or until the next message arrives).
+  // Purely cosmetic, so a failure is only logged.
+  async sendChatAction(chatId, action) {
+    try {
+      await fetch(`https://api.telegram.org/bot${this.botToken}/sendChatAction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, action }),
+      });
+    } catch (error) {
+      console.error("[telegram] sendChatAction failed:", error);
+    }
+  }
 }

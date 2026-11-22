@@ -7,14 +7,16 @@ import { ExchangeRateApiGateway } from "./infrastructure/gateways/ExchangeRateAp
 import { CoinGeckoRateGateway } from "./infrastructure/gateways/CoinGeckoRateGateway.ts";
 import { CompositeCurrencyRateGateway } from "./infrastructure/gateways/CompositeCurrencyRateGateway.ts";
 import { TelegramMessengerGateway } from "./infrastructure/gateways/TelegramMessengerGateway.ts";
+import { GeminiChatGateway } from "./infrastructure/gateways/GeminiChatGateway.ts";
 import { SupabaseMessageRepository } from "./infrastructure/repositories/SupabaseMessageRepository.ts";
 
 import { RecordMessageUseCase } from "./application/useCases/RecordMessageUseCase.ts";
 import { ListMessagesUseCase } from "./application/useCases/ListMessagesUseCase.ts";
 import { AnswerCurrencyQueryUseCase } from "./application/useCases/AnswerCurrencyQueryUseCase.ts";
 import { GetLiveRatesUseCase } from "./application/useCases/GetLiveRatesUseCase.ts";
+import { AskGeminiUseCase } from "./application/useCases/AskGeminiUseCase.ts";
 
-import { handleTelegramWebhook } from "./interfaceAdapters/controllers/telegramWebhookController.ts";
+import { handleTelegramWebhook, BOT_DISPLAY_NAME } from "./interfaceAdapters/controllers/telegramWebhookController.ts";
 import { handleMessagesJson } from "./interfaceAdapters/controllers/messagesJsonController.ts";
 import { handleMessagesPage } from "./interfaceAdapters/controllers/messagesPageController.ts";
 import {
@@ -36,6 +38,23 @@ const messengerGateway = new TelegramMessengerGateway(token);
 const getLiveRatesUseCase = new GetLiveRatesUseCase(currencyDirectory, currencyRateGateway);
 const answerCurrencyQueryUseCase = new AnswerCurrencyQueryUseCase(currencyDirectory, currencyRateGateway, messengerGateway);
 
+// Gemini is optional: without the key the bot keeps working as a plain
+// currency converter instead of failing to start.
+const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+if (!geminiApiKey) {
+  console.warn("GEMINI_API_KEY is not set; free-form messages get 'Unknown currency'");
+}
+const geminiChatGateway = geminiApiKey
+  ? new GeminiChatGateway(geminiApiKey, {
+    // empty/unset → the gateway's default model
+    model: Deno.env.get("GEMINI_MODEL") || undefined,
+    systemInstruction:
+      `You are ${BOT_DISPLAY_NAME}, a friendly Telegram assistant. The bot also converts ` +
+      `currencies when users send queries like "100 USD in EUR". Answer briefly, in the ` +
+      `user's language, as plain text without Markdown formatting.`,
+  })
+  : null;
+
 // The Supabase edge runtime strips the "/functions/v1/" prefix from req.url
 // before invoking the function, so req.url's own path can't be used to derive
 // the externally-reachable base path (it comes back missing that prefix).
@@ -50,6 +69,9 @@ export default {
     const messageRepository = new SupabaseMessageRepository(ctx.supabaseAdmin);
     const recordMessageUseCase = new RecordMessageUseCase(messageRepository);
     const listMessagesUseCase = new ListMessagesUseCase(messageRepository);
+    const askGeminiUseCase = geminiChatGateway
+      ? new AskGeminiUseCase(messageRepository, geminiChatGateway, messengerGateway, { botAuthor: BOT_DISPLAY_NAME })
+      : null;
 
     const webhookMatch = req.method === "POST" && url.pathname.match(WEBHOOK_SUFFIX_RE);
     if (webhookMatch) {
@@ -62,6 +84,7 @@ export default {
         expectedToken: token,
         recordMessageUseCase,
         answerCurrencyQueryUseCase,
+        askGeminiUseCase,
         messengerGateway,
         dashboardUrl: `${httpsOrigin}${FUNCTION_BASE_PATH}/app`,
       });

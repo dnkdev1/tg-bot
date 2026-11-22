@@ -63,7 +63,9 @@ export class AnswerCurrencyQueryUseCase {
     this.messengerGateway = messengerGateway;
   }
 
-  async execute({ chatId, rawText }) {
+  // With replyOnUnknown: false, a message that isn't a currency query gets no
+  // reply and null is returned, so the caller can answer it another way.
+  async execute({ chatId, rawText, replyOnUnknown = true }) {
     const { sourcePart, targetPart } = splitSourceAndTarget(rawText);
 
     const terms = [];
@@ -108,10 +110,12 @@ export class AnswerCurrencyQueryUseCase {
 
     const targetFlag = !hasUnknownCode ? await this.currencyDirectory.getFlag(targetCode) : "";
 
-    const reply =
-      hasUnknownCode || missingRate
-        ? `Unknown currency: ${rawText}`
-        : `${breakdown} = ${total.toFixed(2)} ${targetCode}${targetFlag ? ` ${targetFlag}` : ""}`;
+    const isUnknown = hasUnknownCode || missingRate;
+    if (isUnknown && !replyOnUnknown) return null;
+
+    const reply = isUnknown
+      ? `Unknown currency: ${rawText}`
+      : `${breakdown} = ${total.toFixed(2)} ${targetCode}${targetFlag ? ` ${targetFlag}` : ""}`;
 
     await this.messengerGateway.sendMessage(chatId, reply);
     return reply;

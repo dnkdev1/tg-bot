@@ -1,5 +1,5 @@
 // @ts-nocheck
-const BOT_DISPLAY_NAME = "@ClearExchangeBot";
+export const BOT_DISPLAY_NAME = "@ClearExchangeBot";
 const DASHBOARD_COMMANDS = new Set(["/start", "/dashboard", "/app"]);
 
 export async function handleTelegramWebhook(req, {
@@ -7,6 +7,7 @@ export async function handleTelegramWebhook(req, {
   expectedToken,
   recordMessageUseCase,
   answerCurrencyQueryUseCase,
+  askGeminiUseCase, // null when GEMINI_API_KEY isn't set
   messengerGateway,
   dashboardUrl,
 }) {
@@ -38,16 +39,27 @@ export async function handleTelegramWebhook(req, {
         inline_keyboard: [[{ text: "📊 Open Dashboard", web_app: { url: dashboardUrl } }]],
       });
     } else {
-      const answerReply = await answerCurrencyQueryUseCase.execute({ chatId, rawText: text });
-
-      await recordMessageUseCase.execute({
-        from: BOT_DISPLAY_NAME,
-        text: answerReply,
-        date: new Date().toISOString(),
-        userId,
-        firstName,
-        lastName,
+      // currency queries first; anything the parser doesn't understand goes to Gemini
+      let answerReply = await answerCurrencyQueryUseCase.execute({
+        chatId,
+        rawText: text,
+        replyOnUnknown: !askGeminiUseCase,
       });
+      if (answerReply == null) {
+        answerReply = await askGeminiUseCase.execute({ chatId, userId });
+      }
+
+      // a failed Gemini call returns null: nothing to save, keeps history clean
+      if (answerReply != null) {
+        await recordMessageUseCase.execute({
+          from: BOT_DISPLAY_NAME,
+          text: answerReply,
+          date: new Date().toISOString(),
+          userId,
+          firstName,
+          lastName,
+        });
+      }
     }
   }
 

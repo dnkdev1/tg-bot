@@ -39,6 +39,29 @@ export class SupabaseMessageRepository {
     }));
   }
 
+  // The last `limit` messages of one user's chat (their own messages and the
+  // bot's replies to them), returned oldest first so they read as a dialogue.
+  async listRecentForUser(userId, limit) {
+    const { data, error } = await this.db
+      .from("messages")
+      .select("author, body, created_at, messenger_user_id")
+      .eq("messenger_type", MESSENGER_TYPE)
+      .eq("messenger_user_id", String(userId))
+      // newest first so LIMIT keeps the most recent rows...
+      .order("id", { ascending: false })
+
+      .limit(limit);
+    if (error) throw error;
+
+    // ...then flip back to chronological order
+    return data.reverse().map((row) => new Message({
+      from: row.author,
+      text: row.body,
+      date: row.created_at,
+      userId: row.messenger_user_id,
+    }));
+  }
+
   async #touchClient({ userId, firstName, lastName, date }) {
     const telegramId = String(userId);
     // last_message_at is `timestamp without time zone`; Postgres drops the "Z"
