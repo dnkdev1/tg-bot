@@ -1,6 +1,7 @@
 // @ts-nocheck
 import "@supabase/functions-js/edge-runtime.d.ts";
-import { withSupabase } from "@supabase/server";
+
+import { getDatabase } from "../_shared/database.ts";
 
 import { StaticCurrencyDirectory } from "./infrastructure/gateways/StaticCurrencyDirectory.ts";
 import { ExchangeRateApiGateway } from "./infrastructure/gateways/ExchangeRateApiGateway.ts";
@@ -30,8 +31,13 @@ if (!token) {
   throw new Error("BOT_TOKEN is not set");
 }
 
-// infrastructure: concrete implementations wired once per isolate. The message
-// repository is created per-request below since it needs ctx.supabaseAdmin.
+// infrastructure: concrete implementations wired once per isolate.
+// The database connection comes from the shared adapter, the only place the app
+// connects to the database.
+const messageRepository = new SupabaseMessageRepository(getDatabase());
+const recordMessageUseCase = new RecordMessageUseCase(messageRepository);
+const listMessagesUseCase = new ListMessagesUseCase(messageRepository);
+
 const currencyDirectory = new StaticCurrencyDirectory();
 const currencyRateGateway = new CompositeCurrencyRateGateway(new ExchangeRateApiGateway(), new CoinGeckoRateGateway());
 const messengerGateway = new TelegramMessengerGateway(token);
@@ -58,6 +64,9 @@ const geminiChatGateway = geminiApiKey
       `Answer briefly, in the user's language, as plain text without Markdown formatting.`,
   })
   : null;
+const askGeminiUseCase = geminiChatGateway
+  ? new AskGeminiUseCase(messageRepository, geminiChatGateway, messengerGateway, { botAuthor: BOT_DISPLAY_NAME })
+  : null;
 
 // The Supabase edge runtime strips the "/functions/v1/" prefix from req.url
 // before invoking the function, so req.url's own path can't be used to derive
@@ -67,15 +76,11 @@ const FUNCTION_BASE_PATH = "/functions/v1/bot";
 const WEBHOOK_SUFFIX_RE = /\/webhook\/([^/]+)\/?$/;
 
 export default {
-  fetch: withSupabase({ auth: "none" }, async (req, ctx) => {
+  // No withSupabase() wrapper: the bot has no logged-in users (Telegram is
+  // checked via the webhook token / initData instead), and the database now
+  // comes from the shared adapter rather than ctx.supabaseAdmin.
+  async fetch(req) {
     const url = new URL(req.url);
-
-    const messageRepository = new SupabaseMessageRepository(ctx.supabaseAdmin);
-    const recordMessageUseCase = new RecordMessageUseCase(messageRepository);
-    const listMessagesUseCase = new ListMessagesUseCase(messageRepository);
-    const askGeminiUseCase = geminiChatGateway
-      ? new AskGeminiUseCase(messageRepository, geminiChatGateway, messengerGateway, { botAuthor: BOT_DISPLAY_NAME })
-      : null;
 
     const webhookMatch = req.method === "POST" && url.pathname.match(WEBHOOK_SUFFIX_RE);
     if (webhookMatch) {
@@ -115,5 +120,5 @@ export default {
     }
 
     return new Response("Not Found", { status: 404 });
-  }),
+  },
 };

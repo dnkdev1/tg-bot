@@ -2,6 +2,8 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 
+import { getDatabase } from "../_shared/database.ts";
+
 // PostgREST returns at most 1000 rows per request, so "all clients" is read page by page.
 const PAGE_SIZE = 1000;
 
@@ -9,6 +11,9 @@ const PAGE_SIZE = 1000;
 // logged-in user whose app_metadata.role is "admin" (set by SQL, users cannot
 // change it themselves). No / invalid / expired token -> 401 from withSupabase;
 // valid token of a non-admin -> 403 below. user_telegram_id is deliberately not selected.
+// withSupabase is used only to verify the caller's login token; the database
+// itself comes from the shared adapter (ctx.supabaseAdmin is never touched,
+// so withSupabase never builds a client of its own).
 export default {
   fetch: withSupabase({ auth: "user" }, async (req, ctx) => {
     if (req.method !== "GET") {
@@ -20,7 +25,7 @@ export default {
 
     const clients = [];
     for (let from = 0; ; from += PAGE_SIZE) {
-      const { data, error } = await ctx.supabaseAdmin
+      const { data, error } = await getDatabase()
         .from("clients")
         .select("id, created_at, first_name, last_name, last_message_at")
         .order("last_message_at", { ascending: false })
