@@ -49,9 +49,13 @@ const geminiChatGateway = geminiApiKey
     // empty/unset → the gateway's default model
     model: Deno.env.get("GEMINI_MODEL") || undefined,
     systemInstruction:
-      `You are ${BOT_DISPLAY_NAME}, a friendly Telegram assistant. The bot also converts ` +
-      `currencies when users send queries like "100 USD in EUR". Answer briefly, in the ` +
-      `user's language, as plain text without Markdown formatting.`,
+      // Given only the handle, the model invented a brand ("ClearXchange"), so
+      // the exact name is spelled out and other names are ruled out.
+      `You are ClearExchangeBot (Telegram handle ${BOT_DISPLAY_NAME}), a friendly assistant ` +
+      `in a Telegram chat. If you refer to yourself, use exactly the name "ClearExchangeBot"; ` +
+      `never shorten, respell or invent another name or company. Besides chatting, this bot ` +
+      `converts currencies when users send queries like "100 USD in EUR" or "50 EUR to GBP". ` +
+      `Answer briefly, in the user's language, as plain text without Markdown formatting.`,
   })
   : null;
 
