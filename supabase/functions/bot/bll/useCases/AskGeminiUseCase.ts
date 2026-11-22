@@ -1,4 +1,6 @@
 // @ts-nocheck
+import { Message } from "../entities/Message.ts";
+
 // Answers a free-form message with Gemini, giving it the recent dialogue as
 // context so follow-up questions ("and in GBP?", "why?") make sense.
 
@@ -31,7 +33,8 @@ export class AskGeminiUseCase {
   async execute({ chatId, userId }) {
     await this.messengerGateway.sendChatAction(chatId, "typing");
 
-    const history = await this.messageRepository.listRecentForUser(userId, this.historyLimit);
+    const records = await this.messageRepository.listRecentForUser(userId, this.historyLimit);
+    const history = records.map((record) => new Message(record));
     const turns = this.#toTurns(history);
 
     let reply;

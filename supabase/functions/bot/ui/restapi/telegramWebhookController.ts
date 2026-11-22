@@ -1,5 +1,8 @@
 // @ts-nocheck
-export const BOT_DISPLAY_NAME = "@ClearExchangeBot";
+// UI layer: turns a Telegram update into use-case calls. It talks only to BLL;
+// sending replies and saving messages happen inside the use cases.
+import { BOT_DISPLAY_NAME } from "../../bll/botIdentity.ts";
+
 const DASHBOARD_COMMANDS = new Set(["/start", "/dashboard", "/app"]);
 
 export async function handleTelegramWebhook(req, {
@@ -8,7 +11,7 @@ export async function handleTelegramWebhook(req, {
   recordMessageUseCase,
   answerCurrencyQueryUseCase,
   askGeminiUseCase, // null when GEMINI_API_KEY isn't set
-  messengerGateway,
+  sendDashboardLinkUseCase,
   dashboardUrl,
 }) {
   if (matchedToken !== expectedToken) {
@@ -35,9 +38,7 @@ export async function handleTelegramWebhook(req, {
     });
 
     if (DASHBOARD_COMMANDS.has(text.trim().toLowerCase())) {
-      await messengerGateway.sendMessage(chatId, "Open your live rates and query history:", {
-        inline_keyboard: [[{ text: "📊 Open Dashboard", web_app: { url: dashboardUrl } }]],
-      });
+      await sendDashboardLinkUseCase.execute({ chatId, dashboardUrl });
     } else {
       // currency queries first; anything the parser doesn't understand goes to Gemini
       let answerReply = await answerCurrencyQueryUseCase.execute({

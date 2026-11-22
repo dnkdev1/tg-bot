@@ -1,5 +1,6 @@
 // @ts-nocheck
-import { Message } from "../../domain/entities/Message.ts";
+// DAL layer: returns plain message records ({ from, text, date, userId }) and
+// does not import anything from BLL; the use cases turn records into Message.
 
 const MESSENGER_TYPE = "telegram";
 
@@ -31,7 +32,7 @@ export class SupabaseMessageRepository {
       .order("id", { ascending: true });
     if (error) throw error;
 
-    return data.map((row) => new Message({
+    return data.map((row) => ({
       from: row.author,
       text: row.body,
       date: row.created_at,
@@ -54,7 +55,7 @@ export class SupabaseMessageRepository {
     if (error) throw error;
 
     // ...then flip back to chronological order
-    return data.reverse().map((row) => new Message({
+    return data.reverse().map((row) => ({
       from: row.author,
       text: row.body,
       date: row.created_at,

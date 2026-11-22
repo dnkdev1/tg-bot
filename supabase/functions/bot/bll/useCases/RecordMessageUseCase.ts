@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Message } from "../../domain/entities/Message.ts";
+import { Message } from "../entities/Message.ts";
 
 export class RecordMessageUseCase {
   constructor(messageRepository) {

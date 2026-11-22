@@ -1,37 +1,41 @@
 // @ts-nocheck
 import "@supabase/functions-js/edge-runtime.d.ts";
 
-import { getDatabase } from "../_shared/database.ts";
+import { getDatabase } from "./dal/adapters/database.ts";
 
-import { StaticCurrencyDirectory } from "./infrastructure/gateways/StaticCurrencyDirectory.ts";
-import { ExchangeRateApiGateway } from "./infrastructure/gateways/ExchangeRateApiGateway.ts";
-import { CoinGeckoRateGateway } from "./infrastructure/gateways/CoinGeckoRateGateway.ts";
-import { CompositeCurrencyRateGateway } from "./infrastructure/gateways/CompositeCurrencyRateGateway.ts";
-import { TelegramMessengerGateway } from "./infrastructure/gateways/TelegramMessengerGateway.ts";
-import { GeminiChatGateway } from "./infrastructure/gateways/GeminiChatGateway.ts";
-import { SupabaseMessageRepository } from "./infrastructure/repositories/SupabaseMessageRepository.ts";
+import { StaticCurrencyDirectory } from "./dal/repositories/StaticCurrencyDirectory.ts";
+import { ExchangeRateApiGateway } from "./dal/api/ExchangeRateApiGateway.ts";
+import { CoinGeckoRateGateway } from "./dal/api/CoinGeckoRateGateway.ts";
+import { CompositeCurrencyRateGateway } from "./dal/api/CompositeCurrencyRateGateway.ts";
+import { TelegramMessengerGateway } from "./dal/api/TelegramMessengerGateway.ts";
+import { GeminiChatGateway } from "./dal/api/GeminiChatGateway.ts";
+import { SupabaseMessageRepository } from "./dal/repositories/SupabaseMessageRepository.ts";
 
-import { RecordMessageUseCase } from "./application/useCases/RecordMessageUseCase.ts";
-import { ListMessagesUseCase } from "./application/useCases/ListMessagesUseCase.ts";
-import { AnswerCurrencyQueryUseCase } from "./application/useCases/AnswerCurrencyQueryUseCase.ts";
-import { GetLiveRatesUseCase } from "./application/useCases/GetLiveRatesUseCase.ts";
-import { AskGeminiUseCase } from "./application/useCases/AskGeminiUseCase.ts";
+import { RecordMessageUseCase } from "./bll/useCases/RecordMessageUseCase.ts";
+import { ListMessagesUseCase } from "./bll/useCases/ListMessagesUseCase.ts";
+import { AnswerCurrencyQueryUseCase } from "./bll/useCases/AnswerCurrencyQueryUseCase.ts";
+import { GetLiveRatesUseCase } from "./bll/useCases/GetLiveRatesUseCase.ts";
+import { AskGeminiUseCase } from "./bll/useCases/AskGeminiUseCase.ts";
+import { SendDashboardLinkUseCase } from "./bll/useCases/SendDashboardLinkUseCase.ts";
+import { BOT_DISPLAY_NAME, BOT_SYSTEM_INSTRUCTION } from "./bll/botIdentity.ts";
 
-import { handleTelegramWebhook, BOT_DISPLAY_NAME } from "./interfaceAdapters/controllers/telegramWebhookController.ts";
-import { handleMessagesJson } from "./interfaceAdapters/controllers/messagesJsonController.ts";
-import { handleMessagesPage } from "./interfaceAdapters/controllers/messagesPageController.ts";
+import { handleTelegramWebhook } from "./ui/restapi/telegramWebhookController.ts";
+import { handleMessagesJson } from "./ui/restapi/messagesJsonController.ts";
+import { handleMessagesPage } from "./ui/restapi/messagesPageController.ts";
 import {
   handleMiniAppPage,
   handleRatesJson,
   handleMyMessagesJson,
-} from "./interfaceAdapters/controllers/miniAppController.ts";
+} from "./ui/restapi/miniAppController.ts";
 
 const token = Deno.env.get("BOT_TOKEN");
 if (!token) {
   throw new Error("BOT_TOKEN is not set");
 }
 
-// infrastructure: concrete implementations wired once per isolate.
+// Wiring (composition root): DAL objects are created first and handed to the BLL
+// use cases, which are handed to the UI controllers below. Everything is built
+// once per isolate.
 // The database connection comes from the shared adapter, the only place the app
 // connects to the database.
 const messageRepository = new SupabaseMessageRepository(getDatabase());
@@ -43,6 +47,7 @@ const currencyRateGateway = new CompositeCurrencyRateGateway(new ExchangeRateApi
 const messengerGateway = new TelegramMessengerGateway(token);
 const getLiveRatesUseCase = new GetLiveRatesUseCase(currencyDirectory, currencyRateGateway);
 const answerCurrencyQueryUseCase = new AnswerCurrencyQueryUseCase(currencyDirectory, currencyRateGateway, messengerGateway);
+const sendDashboardLinkUseCase = new SendDashboardLinkUseCase(messengerGateway);
 
 // Gemini is optional: without the key the bot keeps working as a plain
 // currency converter instead of failing to start.
@@ -54,14 +59,7 @@ const geminiChatGateway = geminiApiKey
   ? new GeminiChatGateway(geminiApiKey, {
     // empty/unset → the gateway's default model
     model: Deno.env.get("GEMINI_MODEL") || undefined,
-    systemInstruction:
-      // Given only the handle, the model invented a brand ("ClearXchange"), so
-      // the exact name is spelled out and other names are ruled out.
-      `You are ClearExchangeBot (Telegram handle ${BOT_DISPLAY_NAME}), a friendly assistant ` +
-      `in a Telegram chat. If you refer to yourself, use exactly the name "ClearExchangeBot"; ` +
-      `never shorten, respell or invent another name or company. Besides chatting, this bot ` +
-      `converts currencies when users send queries like "100 USD in EUR" or "50 EUR to GBP". ` +
-      `Answer briefly, in the user's language, as plain text without Markdown formatting.`,
+    systemInstruction: BOT_SYSTEM_INSTRUCTION,
   })
   : null;
 const askGeminiUseCase = geminiChatGateway
@@ -94,7 +92,7 @@ export default {
         recordMessageUseCase,
         answerCurrencyQueryUseCase,
         askGeminiUseCase,
-        messengerGateway,
+        sendDashboardLinkUseCase,
         dashboardUrl: `${httpsOrigin}${FUNCTION_BASE_PATH}/app`,
       });
     }

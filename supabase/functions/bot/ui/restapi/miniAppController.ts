@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { renderMiniAppHtml } from "../presenters/miniAppHtmlPresenter.ts";
-import { verifyTelegramInitData } from "../../infrastructure/security/verifyTelegramInitData.ts";
+import { verifyTelegramInitData } from "../../bll/security/verifyTelegramInitData.ts";
 
 export function handleMiniAppPage(basePath) {
   return new Response(renderMiniAppHtml(basePath), {

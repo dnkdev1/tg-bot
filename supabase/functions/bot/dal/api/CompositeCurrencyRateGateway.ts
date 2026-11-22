@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { CRYPTO_CODES } from "./StaticCurrencyDirectory.ts";
+import { CRYPTO_CODES } from "../repositories/StaticCurrencyDirectory.ts";
 
 export class CompositeCurrencyRateGateway {
   constructor(fiatGateway, cryptoGateway) {
